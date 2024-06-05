@@ -11,7 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Tasks App',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
@@ -80,30 +80,47 @@ class TaskWidget extends StatefulWidget {
 
 class _TaskWidgetState extends State<TaskWidget> {
   // ignore: prefer_const_constructors
-  TextStyle strikeThrough = TextStyle();
-  bool isDoneCheckbox = false;
+  TextDecoration? strikeThrough;
+  bool? isDoneVariable;
 
   @override
   void initState() {
     super.initState();
-    strikeThrough = TextStyle(
-        decoration: widget.taskVar.isDone
-            ? TextDecoration.lineThrough
-            : TextDecoration.none);
-    isDoneCheckbox = widget.taskVar.isDone;
+    isDoneVariable = widget.taskVar.isDone;
+    strikeThrough = isDoneVariable! ? TextDecoration.lineThrough : null;
+  }
+
+  void _toggleTask() {
+    setState(() {
+      widget.taskVar.toggleTask();
+      isDoneVariable = widget.taskVar.isDone;
+      strikeThrough = isDoneVariable! ? TextDecoration.lineThrough : null;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final textStyle = theme.textTheme.displayMedium!
+    var textStyle = theme.textTheme.displayMedium!
         .copyWith(color: theme.colorScheme.onPrimary);
+
+    textStyle = textStyle.copyWith(decoration: strikeThrough);
 
     return Card(
       color: theme.colorScheme.primary,
       child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Text('test'),
+        padding: const EdgeInsets.all(8),
+        child: Row(
+          children: [
+            Checkbox(
+              value: isDoneVariable,
+              onChanged: (bool? value) {
+                _toggleTask();
+              },
+            ),
+            Text('test', style: textStyle),
+          ],
+        ),
       ),
     );
   }
