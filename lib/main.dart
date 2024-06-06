@@ -16,27 +16,28 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: TasksList(title: 'Flutter Demo Home Page'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
+class TasksList extends StatefulWidget {
   final String title;
+  final List<Task> tasks = [
+    Task(taskString: 'Task 1'),
+    Task(taskString: 'Task 2'),
+    Task(taskString: 'Task 3'),
+  ];
+  TasksList({super.key, required this.title});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<TasksList> createState() => _TasksListState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
+class _TasksListState extends State<TasksList> {
+  @override
+  void initState() {
+    super.initState();
   }
 
   @override
@@ -46,23 +47,17 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
+      body: ListView.builder(
+        itemCount: widget.tasks.length,
+        itemBuilder: (BuildContext context, int index) {
+          return TaskWidget(taskVar: widget.tasks[index]);
+        },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
+        onPressed: () {
+          // Add your code here
+        },
+        tooltip: 'Add',
         child: const Icon(Icons.add),
       ),
     );
