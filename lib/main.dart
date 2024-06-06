@@ -21,13 +21,10 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// ignore: must_be_immutable
 class TasksList extends StatefulWidget {
   final String title;
-  final List<Task> tasks = [
-    Task(taskString: 'Task 1'),
-    Task(taskString: 'Task 2'),
-    Task(taskString: 'Task 3'),
-  ];
+  List<Task> tasks = <Task>[];
   TasksList({super.key, required this.title});
 
   @override
