@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: TasksList(title: 'Flutter Demo Home Page'),
+      home: TasksList(title: 'Tasks'),
     );
   }
 }
@@ -54,8 +54,16 @@ class _TasksListState extends State<TasksList> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Add your code here
+        onPressed: () async {
+          final result = await Navigator.push<String>(
+            context,
+            MaterialPageRoute(builder: (context) => const AddNewTask()),
+          );
+          if (result != null) {
+            setState(() {
+              widget.tasks.add(Task(taskString: result));
+            });
+          }
         },
         tooltip: 'Add',
         child: const Icon(Icons.add),
@@ -66,7 +74,6 @@ class _TasksListState extends State<TasksList> {
 
 class TaskWidget extends StatefulWidget {
   final Task taskVar;
-
   const TaskWidget({super.key, required this.taskVar});
 
   @override
@@ -113,8 +120,62 @@ class _TaskWidgetState extends State<TaskWidget> {
                 _toggleTask();
               },
             ),
-            Text('test', style: textStyle),
+            Text(widget.taskVar.taskString, style: textStyle),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class AddNewTask extends StatefulWidget {
+  const AddNewTask({super.key});
+
+  @override
+  State<AddNewTask> createState() => _AddNewTaskState();
+}
+
+class _AddNewTaskState extends State<AddNewTask> {
+  final _formKey = GlobalKey<FormState>();
+  final _controller = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Add New Task'),
+      ),
+      body: Center(
+        child: Container(
+          color: Theme.of(context).colorScheme.background,
+          width: MediaQuery.of(context).size.width * 0.8,
+          height: MediaQuery.of(context).size.height * 0.3,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                TextFormField(
+                  controller: _controller,
+                  decoration: const InputDecoration(labelText: 'Task'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a task';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      Navigator.pop(context, _controller.text);
+                    }
+                  },
+                  child: const Text('Submit'),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
