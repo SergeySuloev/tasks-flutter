@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'tasklib.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const TaskAppHomescreen());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class TaskAppHomescreen extends StatelessWidget {
+  const TaskAppHomescreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Tasks App',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
         useMaterial3: true,
       ),
       home: TasksList(title: 'Tasks'),
@@ -37,6 +37,12 @@ class _TasksListState extends State<TasksList> {
     super.initState();
   }
 
+  void removeTask(int index) {
+    setState(() {
+      widget.tasks.removeAt(index);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,7 +53,8 @@ class _TasksListState extends State<TasksList> {
       body: ListView.builder(
         itemCount: widget.tasks.length,
         itemBuilder: (BuildContext context, int index) {
-          return TaskWidget(taskVar: widget.tasks[index]);
+          var task = widget.tasks[index];
+          return TaskCard(removeTask: () => removeTask(index), taskVar: task);
         },
       ),
       floatingActionButton: FloatingActionButton(
@@ -69,15 +76,16 @@ class _TasksListState extends State<TasksList> {
   }
 }
 
-class TaskWidget extends StatefulWidget {
+class TaskCard extends StatefulWidget {
+  final VoidCallback removeTask;
   final Task taskVar;
-  const TaskWidget({super.key, required this.taskVar});
+  const TaskCard({super.key, required this.removeTask, required this.taskVar});
 
   @override
-  State<TaskWidget> createState() => _TaskWidgetState();
+  State<TaskCard> createState() => _TaskCardState();
 }
 
-class _TaskWidgetState extends State<TaskWidget> {
+class _TaskCardState extends State<TaskCard> {
   // ignore: prefer_const_constructors
   TextDecoration? strikeThrough;
   bool? isDoneVariable;
@@ -101,24 +109,47 @@ class _TaskWidgetState extends State<TaskWidget> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     var textStyle = theme.textTheme.displayMedium!
-        .copyWith(color: theme.colorScheme.onPrimary);
+        .copyWith(color: theme.colorScheme.onPrimaryContainer);
 
+    textStyle =
+        textStyle.copyWith(fontSize: MediaQuery.of(context).size.width * 0.05);
     textStyle = textStyle.copyWith(decoration: strikeThrough);
 
     return Card(
-      color: theme.colorScheme.primary,
-      child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Row(
-          children: [
-            Checkbox(
-              value: isDoneVariable,
-              onChanged: (bool? value) {
-                _toggleTask();
-              },
-            ),
-            Text(widget.taskVar.taskString, style: textStyle),
-          ],
+      color: theme.colorScheme.primaryContainer,
+      child: InkWell(
+        onTap: () async {
+          final result = await Navigator.push<String>(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => TaskFullView(taskVar: widget.taskVar)));
+          if (result != null) {
+            setState(() => widget.taskVar.editTask(result));
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Row(
+            children: [
+              Checkbox(
+                checkColor: theme.colorScheme.onPrimaryContainer,
+                value: isDoneVariable,
+                onChanged: (bool? value) {
+                  _toggleTask();
+                },
+              ),
+              Expanded(
+                child: Text(
+                  widget.taskVar.taskString,
+                  style: textStyle,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: MediaQuery.of(context).size.height ~/ 100,
+                ),
+              ),
+              ElevatedButton(
+                  onPressed: widget.removeTask, child: const Icon(Icons.remove))
+            ],
+          ),
         ),
       ),
     );
@@ -143,8 +174,7 @@ class _AddNewTaskState extends State<AddNewTask> {
         title: const Text('Add New Task'),
       ),
       body: Center(
-        child: Container(
-          color: Theme.of(context).colorScheme.background,
+        child: SizedBox(
           width: MediaQuery.of(context).size.width * 0.8,
           height: MediaQuery.of(context).size.height * 0.3,
           child: Form(
@@ -176,5 +206,61 @@ class _AddNewTaskState extends State<AddNewTask> {
         ),
       ),
     );
+  }
+}
+
+class TaskFullView extends StatefulWidget {
+  final Task taskVar;
+  const TaskFullView({super.key, required this.taskVar});
+
+  @override
+  State<TaskFullView> createState() => _TaskFullViewState();
+}
+
+class _TaskFullViewState extends State<TaskFullView> {
+  final _formKey = GlobalKey<FormState>();
+  var _controller = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.taskVar.taskString);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(title: const Text('Edit task')),
+        body: Center(
+          child: SizedBox(
+            width: MediaQuery.sizeOf(context).width * 0.8,
+            height: MediaQuery.sizeOf(context).height * 0.3,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: _controller,
+                    decoration: const InputDecoration(labelText: 'Task'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a task';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          Navigator.pop(context, _controller.text);
+                        }
+                      },
+                      child: const Text('Edit the task'))
+                ],
+              ),
+            ),
+          ),
+        ));
   }
 }

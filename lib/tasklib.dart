@@ -11,4 +11,8 @@ class Task {
       isDone = true;
     }
   }
+
+  void editTask(newTaskString) {
+    taskString = newTaskString;
+  }
 }
