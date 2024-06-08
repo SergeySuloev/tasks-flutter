@@ -166,6 +166,13 @@ class AddNewTask extends StatefulWidget {
 class _AddNewTaskState extends State<AddNewTask> {
   final _formKey = GlobalKey<FormState>();
   final _controller = TextEditingController();
+  final _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.requestFocus();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -195,6 +202,7 @@ class _AddNewTaskState extends State<AddNewTask> {
                 ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
+                      _focusNode.unfocus();
                       Navigator.pop(context, _controller.text);
                     }
                   },
@@ -220,11 +228,13 @@ class TaskFullView extends StatefulWidget {
 class _TaskFullViewState extends State<TaskFullView> {
   final _formKey = GlobalKey<FormState>();
   var _controller = TextEditingController();
+  final _focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.taskVar.taskString);
+    _focusNode.requestFocus();
   }
 
   @override
@@ -240,6 +250,7 @@ class _TaskFullViewState extends State<TaskFullView> {
               child: Column(
                 children: [
                   TextFormField(
+                    focusNode: _focusNode,
                     controller: _controller,
                     decoration: const InputDecoration(labelText: 'Task'),
                     validator: (value) {
@@ -253,10 +264,11 @@ class _TaskFullViewState extends State<TaskFullView> {
                   ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
+                          _focusNode.unfocus();
                           Navigator.pop(context, _controller.text);
                         }
                       },
-                      child: const Text('Edit the task'))
+                      child: const Text('Edit task'))
                 ],
               ),
             ),
